@@ -9,6 +9,8 @@ import ProblemDetail from "./pages/ProblemDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminPanel from "./pages/AdminPanel";
 import Leaderboard from "./pages/Leaderboard";
+import { Toaster } from "./components/ui/sonner"
+
 
 function App() {
   return (
@@ -66,7 +68,9 @@ function App() {
           }
         />
       </Routes>
+       <Toaster richColors/>
     </BrowserRouter>
+    
   );
 }
 

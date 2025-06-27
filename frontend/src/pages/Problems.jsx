@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { toast } from "sonner";
 
 const Problems = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const Problems = () => {
         setProblems(problemsRes.data);
         setLeaders(leadersRes.data);
       } catch {
-        alert("Failed to load data");
+        toast.info("Failed to load data");
       }
     };
 
@@ -25,24 +26,24 @@ const Problems = () => {
   }, []);
 
   const getBadge = (difficulty) => {
-    const base = "text-xs px-2 py-1 rounded-full font-medium";
-    if (difficulty === "Easy") return `${base} bg-green-100 text-green-600`;
-    if (difficulty === "Medium") return `${base} bg-yellow-100 text-yellow-700`;
-    return `${base} bg-red-100 text-red-600`;
+    const base = "text-xs px-2 py-1 rounded-full font-semibold";
+    if (difficulty === "Easy") return `${base} bg-green-700 text-green-100`;
+    if (difficulty === "Medium") return `${base} bg-yellow-600 text-white`;
+    return `${base} bg-red-600 text-white`;
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+    <div className="min-h-screen bg-gradient-to-tr from-zinc-950 to-black text-white p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 animate-[--animate-fade-in]">
       {/* Problem List */}
       <div className="lg:col-span-2">
-        <h2 className="text-2xl font-bold mb-4">All Problems</h2>
-        <div className="bg-white shadow overflow-hidden border border-gray-200 rounded-lg">
+        <h2 className="text-3xl font-bold mb-4 text-white">📘 Problem List</h2>
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl shadow-lg overflow-hidden">
           <table className="min-w-full text-left">
-            <thead className="bg-gray-100">
+            <thead className="bg-white/10 text-gray-300 text-sm uppercase">
               <tr>
-                <th className="p-3">Name</th>
-                <th className="p-3">Code</th>
-                <th className="p-3">Difficulty</th>
+                <th className="p-4">Name</th>
+                <th className="p-4">Code</th>
+                <th className="p-4">Difficulty</th>
               </tr>
             </thead>
             <tbody>
@@ -50,18 +51,18 @@ const Problems = () => {
                 <tr
                   key={p._id}
                   onClick={() => navigate(`/problems/${p.code}`)}
-                  className="border-t hover:bg-gray-50 cursor-pointer transition"
+                  className="border-t border-white/10 hover:bg-white/10 transition cursor-pointer"
                 >
-                  <td className="p-3 font-medium text-blue-600">{p.name}</td>
-                  <td className="p-3 text-gray-500">{p.code}</td>
-                  <td className="p-3">
+                  <td className="p-4 font-semibold text-blue-400">{p.name}</td>
+                  <td className="p-4 text-gray-400">{p.code}</td>
+                  <td className="p-4">
                     <span className={getBadge(p.difficulty)}>{p.difficulty}</span>
                   </td>
                 </tr>
               ))}
               {problems.length === 0 && (
                 <tr>
-                  <td className="p-4 text-center text-gray-500" colSpan={3}>
+                  <td colSpan={3} className="p-4 text-center text-gray-500">
                     No problems available.
                   </td>
                 </tr>
@@ -72,28 +73,28 @@ const Problems = () => {
       </div>
 
       {/* Leaderboard */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4 text-center">🏆 Leaderboard</h2>
-        <div className="bg-white rounded shadow border">
+      <div className="animate-[--animate-fade-in] delay-100">
+        <h2 className="text-2xl font-semibold mb-4 text-center text-white">🏆 Leaderboard</h2>
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl shadow-lg overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-100">
+            <thead className="bg-white/10 text-gray-300 text-sm uppercase">
               <tr>
-                <th className="p-2 text-left">#</th>
-                <th className="p-2 text-left">User</th>
-                <th className="p-2 text-left">Accepted</th>
+                <th className="p-3 text-left">#</th>
+                <th className="p-3 text-left">User</th>
+                <th className="p-3 text-left">Accepted</th>
               </tr>
             </thead>
             <tbody>
               {leaders.map((user, index) => (
-                <tr key={user.userId} className="border-t hover:bg-gray-50">
-                  <td className="p-2 font-semibold">{index + 1}</td>
-                  <td className="p-2 truncate max-w-[150px]">{user.fullName}</td>
-                  <td className="p-2 font-semibold text-green-600">{user.totalAccepted}</td>
+                <tr key={user.userId} className="border-t border-white/10 hover:bg-white/10 transition">
+                  <td className="p-3 font-bold">{index + 1}</td>
+                  <td className="p-3 truncate max-w-[140px] text-blue-300">{user.fullName}</td>
+                  <td className="p-3 font-semibold text-green-400">{user.totalAccepted}</td>
                 </tr>
               ))}
               {leaders.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="p-3 text-center text-gray-400">
+                  <td colSpan={3} className="p-4 text-center text-gray-400">
                     No rankings yet.
                   </td>
                 </tr>

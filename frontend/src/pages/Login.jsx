@@ -1,33 +1,69 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import API from "../services/api";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      await API.post("/auth/login", formData);
-      alert("Login successful");
+      await API.post("/auth/login", form);
+      toast.success("Login Successful");
       navigate("/problems");
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      toast.error(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container">
-      <h2 className="text-2xl font-bold mb-4">Login</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input className="input" type="email" name="email" placeholder="Email" onChange={handleChange} required />
-        <input className="input" type="password" name="password" placeholder="Password" onChange={handleChange} required />
-        <button className="btn" type="submit">Login</button>
-      </form>
+    <div className="min-h-screen bg-gradient-to-br from-zinc-900 to-black flex items-center justify-center ">
+      <div className="bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-xl p-8 shadow-lg w-full max-w-md animate-[--animate-fade-in]">
+        <h2 className="text-3xl font-bold mb-6 text-center">Welcome Back 👋</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            className="w-full px-4 py-3 rounded-md bg-white/10 backdrop-blur placeholder-gray-400 text-white focus:outline-none border border-white/20 focus:border-blue-500 transition"
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            className="w-full px-4 py-3 rounded-md bg-white/10 backdrop-blur placeholder-gray-400 text-white focus:outline-none border border-white/20 focus:border-blue-500 transition"
+            required
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 transition text-white font-medium py-2.5 rounded-md shadow-sm"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+        <p className="text-sm text-center mt-4 text-gray-400">
+          Don't have an account?{" "}
+          <a href="/register" className="text-blue-400 hover:underline">
+            Register here
+          </a>
+        </p>
+      </div>
     </div>
   );
 };

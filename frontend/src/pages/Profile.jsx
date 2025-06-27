@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../services/api";
+import { toast } from "sonner";
 
 const Profile = () => {
   const [submissions, setSubmissions] = useState([]);
@@ -14,7 +15,7 @@ const Profile = () => {
         const res = await API.get("/submissions/mine");
         setSubmissions(res.data);
       } catch (err) {
-        alert("Failed to load submissions.");
+        toast.error("Failed to load submissions.");
       } finally {
         setLoading(false);
       }
@@ -34,20 +35,20 @@ const Profile = () => {
   }, []);
 
   const getVerdictColor = (verdict) => {
-    if (verdict === "Accepted") return "text-green-600";
-    if (verdict === "Wrong Answer") return "text-red-500";
-    return "text-yellow-600";
+    if (verdict === "Accepted") return "text-green-400";
+    if (verdict === "Wrong Answer") return "text-red-400";
+    return "text-yellow-300";
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-6">My Submissions</h1>
+    <div className="max-w-6xl mx-auto p-6 text-white animate-[--animate-fade-in]">
+      <h1 className="text-3xl font-bold mb-6 text-blue-300">📂 My Submissions</h1>
 
       {isAdmin && (
-        <div className="mb-4 text-right">
+        <div className="mb-6 text-right">
           <Link
             to="/admin"
-            className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition"
           >
             ➕ Add Problem
           </Link>
@@ -57,11 +58,11 @@ const Profile = () => {
       {loading ? (
         <p>Loading...</p>
       ) : submissions.length === 0 ? (
-        <p className="text-gray-500">No submissions yet.</p>
+        <p className="text-gray-400">No submissions yet.</p>
       ) : (
-        <div className="bg-white border rounded shadow overflow-x-auto">
-          <table className="min-w-full text-left divide-y divide-gray-200">
-            <thead className="bg-gray-100">
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-lg overflow-x-auto">
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-white/10 text-gray-300 uppercase">
               <tr>
                 <th className="px-6 py-3">Problem</th>
                 <th className="px-6 py-3">Language</th>
@@ -69,19 +70,15 @@ const Profile = () => {
                 <th className="px-6 py-3">Submitted At</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-white/10">
               {submissions.map((s) => (
-                <tr key={s._id}>
-                  <td className="px-6 py-3">{s.problem?.name || "N/A"}</td>
+                <tr key={s._id} className="hover:bg-white/5 transition">
+                  <td className="px-6 py-3 text-blue-300">{s.problem?.name || "N/A"}</td>
                   <td className="px-6 py-3">{s.language}</td>
-                  <td
-                    className={`px-6 py-3 font-semibold ${getVerdictColor(
-                      s.verdict
-                    )}`}
-                  >
+                  <td className={`px-6 py-3 font-semibold ${getVerdictColor(s.verdict)}`}>
                     {s.verdict}
                   </td>
-                  <td className="px-6 py-3 text-sm text-gray-500">
+                  <td className="px-6 py-3 text-gray-400 text-sm">
                     {new Date(s.submittedAt).toLocaleString()}
                   </td>
                 </tr>
