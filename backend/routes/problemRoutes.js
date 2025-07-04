@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/', verifyToken, getAllProblems);
 router.post('/', verifyToken, verifyAdmin, createProblem);
 router.get('/:code', verifyToken, getProblemByCode);
-router.post("/", verifyToken, verifyAdmin, createProblem);
+
 
 
 

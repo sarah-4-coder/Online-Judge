@@ -79,7 +79,8 @@ const Profile = () => {
                     {s.verdict}
                   </td>
                   <td className="px-6 py-3 text-gray-400 text-sm">
-                    {new Date(s.submittedAt).toLocaleString()}
+                    {s.createdAt ? new Date(s.createdAt).toLocaleString() : "Unknown"}
+
                   </td>
                 </tr>
               ))}

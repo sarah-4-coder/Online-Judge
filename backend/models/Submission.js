@@ -6,8 +6,7 @@ const submissionSchema = new mongoose.Schema({
   language: { type: String, required: true },
   code: { type: String, required: true },
   verdict: { type: String, default: "Pending" },
-  submittedAt: { type: Date, default: Date.now }
-});
+},{ timestamps: true });
 
 const Submission = mongoose.model('Submission', submissionSchema);
 export default Submission;

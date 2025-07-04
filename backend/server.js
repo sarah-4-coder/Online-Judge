@@ -9,6 +9,7 @@ import testCaseRoutes from './routes/testCaseRoutes.js';
 import cookieParser from 'cookie-parser';
 import submissionRoutes from './routes/submissionRoutes.js';
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
 
 
 dotenv.config();
@@ -28,6 +29,7 @@ app.use('/api/problems', problemRoutes);
 app.use('/api/testcases', testCaseRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
+app.use('/api/ai', aiRoutes);
 
 
 // Connect to DB

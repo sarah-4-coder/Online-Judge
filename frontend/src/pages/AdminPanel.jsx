@@ -11,6 +11,38 @@ const AdminPanel = () => {
     sampleTestCases: [{ input: "", expectedOutput: "" }],
     hiddenTestCases: [{ input: "", expectedOutput: "" }],
   });
+  const [genLoading, setGenLoading] = useState(false);
+
+  const handleAIProblem = async () => {
+    const topic = prompt("Enter a topic (e.g., arrays, strings):");
+    const difficulty = prompt("Enter difficulty (Easy, Medium, Hard):");
+
+    if (!topic || !difficulty) return;
+
+    try {
+      setGenLoading(true);
+      const res = await API.post("/ai/generate-problem", { topic, difficulty });
+
+      setFormData({
+        name: res.data.name || "",
+        code: res.data.code || "",
+        difficulty: res.data.difficulty || "Easy",
+        statement: res.data.statement || "",
+        sampleTestCases: res.data.sampleTestCases || [
+          { input: "", expectedOutput: "" },
+        ],
+        hiddenTestCases: res.data.hiddenTestCases || [
+          { input: "", expectedOutput: "" },
+        ],
+      });
+
+      toast.success("AI-generated problem added to form!");
+    } catch {
+      toast.error("Failed to generate problem");
+    } finally {
+      setGenLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -50,7 +82,17 @@ const AdminPanel = () => {
   return (
     <div className="max-w-4xl mx-auto mt-10 px-6 animate-[--animate-fade-in]">
       <div className="bg-white/5 backdrop-blur-md border border-white/10 text-white p-8 rounded-xl shadow-lg">
-        <h2 className="text-3xl font-bold mb-6 text-blue-300">🛠 Add New Problem</h2>
+        <h2 className="text-3xl font-bold mb-6 text-blue-300">
+          🛠 Add New Problem
+        </h2>
+
+        <button
+          onClick={handleAIProblem}
+          disabled={genLoading}
+          className="mb-4 bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-md transition"
+        >
+          {genLoading ? "Generating..." : "🧠 Generate Problem using AI"}
+        </button>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <input
@@ -92,7 +134,9 @@ const AdminPanel = () => {
 
           {/* Sample Test Cases */}
           <div>
-            <h4 className="font-semibold mb-2 text-white">🧪 Sample Test Cases</h4>
+            <h4 className="font-semibold mb-2 text-white">
+              🧪 Sample Test Cases
+            </h4>
             {formData.sampleTestCases.map((test, idx) => (
               <div key={idx} className="mb-3 space-y-2">
                 <textarea
@@ -100,7 +144,12 @@ const AdminPanel = () => {
                   placeholder="Input"
                   value={test.input}
                   onChange={(e) =>
-                    handleTestCaseChange("sampleTestCases", idx, "input", e.target.value)
+                    handleTestCaseChange(
+                      "sampleTestCases",
+                      idx,
+                      "input",
+                      e.target.value
+                    )
                   }
                 />
                 <textarea
@@ -108,7 +157,12 @@ const AdminPanel = () => {
                   placeholder="Expected Output"
                   value={test.expectedOutput}
                   onChange={(e) =>
-                    handleTestCaseChange("sampleTestCases", idx, "expectedOutput", e.target.value)
+                    handleTestCaseChange(
+                      "sampleTestCases",
+                      idx,
+                      "expectedOutput",
+                      e.target.value
+                    )
                   }
                 />
               </div>
@@ -124,7 +178,9 @@ const AdminPanel = () => {
 
           {/* Hidden Test Cases */}
           <div>
-            <h4 className="font-semibold mb-2 text-white">🔒 Hidden Test Cases</h4>
+            <h4 className="font-semibold mb-2 text-white">
+              🔒 Hidden Test Cases
+            </h4>
             {formData.hiddenTestCases.map((test, idx) => (
               <div key={idx} className="mb-3 space-y-2">
                 <textarea
@@ -132,7 +188,12 @@ const AdminPanel = () => {
                   placeholder="Input"
                   value={test.input}
                   onChange={(e) =>
-                    handleTestCaseChange("hiddenTestCases", idx, "input", e.target.value)
+                    handleTestCaseChange(
+                      "hiddenTestCases",
+                      idx,
+                      "input",
+                      e.target.value
+                    )
                   }
                 />
                 <textarea
@@ -140,7 +201,12 @@ const AdminPanel = () => {
                   placeholder="Expected Output"
                   value={test.expectedOutput}
                   onChange={(e) =>
-                    handleTestCaseChange("hiddenTestCases", idx, "expectedOutput", e.target.value)
+                    handleTestCaseChange(
+                      "hiddenTestCases",
+                      idx,
+                      "expectedOutput",
+                      e.target.value
+                    )
                   }
                 />
               </div>
