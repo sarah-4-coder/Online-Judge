@@ -42,7 +42,9 @@ const Profile = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6 text-white animate-[--animate-fade-in]">
-      <h1 className="text-3xl font-bold mb-6 text-blue-300">📂 My Submissions</h1>
+      <h1 className="text-3xl font-bold mb-6 text-blue-300">
+        📂 My Submissions
+      </h1>
 
       {isAdmin && (
         <div className="mb-6 text-right">
@@ -51,6 +53,12 @@ const Profile = () => {
             className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition"
           >
             ➕ Add Problem
+          </Link>
+          <Link
+            to="/admin/contests/create"
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition"
+          >
+            ➕ Create New Contest
           </Link>
         </div>
       )}
@@ -73,14 +81,21 @@ const Profile = () => {
             <tbody className="divide-y divide-white/10">
               {submissions.map((s) => (
                 <tr key={s._id} className="hover:bg-white/5 transition">
-                  <td className="px-6 py-3 text-blue-300">{s.problem?.name || "N/A"}</td>
+                  <td className="px-6 py-3 text-blue-300">
+                    {s.problem?.name || "N/A"}
+                  </td>
                   <td className="px-6 py-3">{s.language}</td>
-                  <td className={`px-6 py-3 font-semibold ${getVerdictColor(s.verdict)}`}>
+                  <td
+                    className={`px-6 py-3 font-semibold ${getVerdictColor(
+                      s.verdict
+                    )}`}
+                  >
                     {s.verdict}
                   </td>
                   <td className="px-6 py-3 text-gray-400 text-sm">
-                    {s.createdAt ? new Date(s.createdAt).toLocaleString() : "Unknown"}
-
+                    {s.createdAt
+                      ? new Date(s.createdAt).toLocaleString()
+                      : "Unknown"}
                   </td>
                 </tr>
               ))}

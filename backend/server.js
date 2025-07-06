@@ -10,6 +10,7 @@ import cookieParser from 'cookie-parser';
 import submissionRoutes from './routes/submissionRoutes.js';
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
+import contestRoutes from './routes/contestRoutes.js';
 
 
 dotenv.config();
@@ -30,6 +31,7 @@ app.use('/api/testcases', testCaseRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use('/api/ai', aiRoutes);
+app.use("/api/contests", contestRoutes);
 
 
 // Connect to DB

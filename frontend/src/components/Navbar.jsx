@@ -19,11 +19,17 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-20 w-full bg-white/10 backdrop-blur border-b border-white/20 shadow-md text-white">
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-bold text-blue-400 hover:text-blue-300 transition">
+        <Link
+          to="/"
+          className="text-2xl font-bold text-blue-400 hover:text-blue-300 transition"
+        >
           Online Judge
         </Link>
 
         <div className="flex items-center gap-6 text-sm font-medium">
+          <Link to="/contests" className="hover:text-yellow-400 transition">
+            Contests
+          </Link>
           <Link to="/problems" className="hover:text-blue-300 transition">
             Problems
           </Link>

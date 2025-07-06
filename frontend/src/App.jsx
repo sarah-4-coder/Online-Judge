@@ -8,8 +8,11 @@ import Layout from "./components/Layout";
 import ProblemDetail from "./pages/ProblemDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminPanel from "./pages/AdminPanel";
-import Leaderboard from "./pages/Leaderboard";
 import { Toaster } from "./components/ui/sonner"
+import Contests from "./pages/Contests";
+import ContestDashboard from "./pages/ContestDashboard";
+import ContestProblem from "./pages/ContestProblem";
+import AdminCreateContest from "./pages/AdminCreateContest";
 
 
 function App() {
@@ -19,6 +22,16 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route
+          path="/contests"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Contests />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/problems"
           element={
@@ -58,11 +71,31 @@ function App() {
           }
         />
         <Route
-          path="/leaderboard"
+          path="/admin/contests/create"
           element={
             <ProtectedRoute>
               <Layout>
-                <Leaderboard />
+                <AdminCreateContest />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contests/:id"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ContestDashboard />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contests/:contestId/problems/:problemCode"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ContestProblem />
               </Layout>
             </ProtectedRoute>
           }
