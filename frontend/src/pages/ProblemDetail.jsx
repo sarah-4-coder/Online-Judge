@@ -28,6 +28,10 @@ const ProblemDetail = () => {
   const [debug, setDebug] = useState("");
   const [hint, setHint] = useState("");
   const [hintLoading, setHintLoading] = useState(false);
+  const [boilerplate, setBoilerplate] = useState("");
+  const [simplified, setSimplified] = useState("");
+
+  const [simplifyModal, setSimplifyModal] = useState(false);
 
   useEffect(() => {
     const fetchProblem = async () => {
@@ -65,6 +69,37 @@ const ProblemDetail = () => {
       toast.error("Failed to get hint");
     } finally {
       setHintLoading(false);
+    }
+  };
+
+  const handleBoilerplate = async () => {
+    try {
+      setAction("boilerplate");
+      const res = await API.post("/ai/boilerplate", {
+        statement: problem.statement,
+        language: language,
+      });
+      setCodeText(res.data.boilerplate);
+      toast.success("Pseudocode inserted!");
+    } catch {
+      toast.error("Failed to generate pseudocode");
+    } finally {
+      setAction("");
+    }
+  };
+
+  const handleSimplify = async () => {
+    try {
+      setAction("simplify");
+      const res = await API.post("/ai/simplify", {
+        statement: problem.statement,
+      });
+      setSimplified(res.data.simplified);
+      setSimplifyModal(true);
+    } catch {
+      toast.error("Failed to simplify problem");
+    } finally {
+      setAction("");
     }
   };
 
@@ -232,7 +267,14 @@ const ProblemDetail = () => {
           <p className="text-sm text-gray-400 mb-4">
             Difficulty: <span className="text-white">{problem.difficulty}</span>
           </p>
-          <p className="whitespace-pre-line">{problem.statement}</p>
+          <p className="whitespace-pre-line mb-5">{problem.statement}</p>
+          <button
+            onClick={handleSimplify}
+            disabled={action === "simplify"}
+            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-semibold"
+          >
+            {action === "simplify" ? "Simplifying..." : "Simplify Problem"}
+          </button>
 
           {problem.sampleTestCases.length > 0 && (
             <div className="mt-6">
@@ -278,6 +320,18 @@ const ProblemDetail = () => {
           </div>
         )}
 
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button
+            onClick={handleBoilerplate}
+            disabled={action === "boilerplate"}
+            className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded font-semibold"
+          >
+            {action === "boilerplate"
+              ? "Generating..."
+              : "Get Boilerplate Code"}
+          </button>
+        </div>
+
         {/* 💻 Editor */}
         <div className="bg-white/5 border border-white/10 p-6 rounded-xl shadow">
           <div className="flex items-center justify-between mb-4">
@@ -311,6 +365,20 @@ const ProblemDetail = () => {
               automaticLayout: true,
             }}
           />
+          {boilerplate && (
+            <div className="mt-6 bg-white/10 p-4 rounded border border-white/10">
+              <h4 className="text-lg font-semibold mb-2 text-indigo-400">
+                🛠 Starter Code
+              </h4>
+              <Editor
+                height="300px"
+                language={language}
+                theme="vs-dark"
+                value={boilerplate}
+                options={{ readOnly: true, fontSize: 14 }}
+              />
+            </div>
+          )}
 
           {/* Buttons */}
           <div className="mt-4 flex gap-4 flex-wrap">
@@ -335,14 +403,14 @@ const ProblemDetail = () => {
               disabled={action === "explain"}
               className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-md font-semibold transition"
             >
-              {action === "explain" ? "Explaining..." : "🤖 Explain My Code"}
+              {action === "explain" ? "Explaining..." : "Explain My Code"}
             </button>
             <button
               onClick={handleDebug}
               disabled={action === "debug"}
               className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-md font-semibold transition"
             >
-              {action === "debug" ? "Debugging..." : "🛠️ Debug My Code"}
+              {action === "debug" ? "Debugging..." : " Debug"}
             </button>
           </div>
 
@@ -412,6 +480,24 @@ const ProblemDetail = () => {
           )}
         </div>
       </div>
+      {simplifyModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-6">
+          <div className="bg-[#121212] border border-white/10 rounded-xl w-full max-w-2xl shadow-lg p-6 relative">
+            <button
+              onClick={() => setSimplifyModal(false)}
+              className="absolute top-2 right-3 text-white text-xl hover:text-red-500"
+            >
+              ✖
+            </button>
+            <h3 className="text-lg font-semibold mb-3 text-blue-300">
+              🧾 Simplified Problem
+            </h3>
+            <div className="text-sm text-white whitespace-pre-wrap leading-relaxed max-h-[60vh] overflow-y-auto">
+              {simplified}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 📜 Submission History */}
       <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow h-fit">

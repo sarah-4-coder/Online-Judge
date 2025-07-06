@@ -87,31 +87,31 @@ export const generateProblem = async (req, res) => {
     const { topic, difficulty } = req.body;
 
     if (!topic || !difficulty) {
-      return res.status(400).json({ message: "Missing input" });
+      return res.status(400).json({ message: "Missing topic or difficulty" });
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
-You are an expert problem setter for a coding platform.
+You are an expert problem setter for a coding platform like LeetCode or Codeforces.
 
-Generate a coding problem and respond with ONLY valid JSON in the following format. 
+🎯 Task:
+Generate a well-structured programming problem for the topic: **${topic}**, with difficulty: **${difficulty}**.
 
-🧠 Your job is to make the problem clear, structured, and executable — use proper "Input" format sections. No markdown or code fences.
+⚠️ Strict Instructions:
+- No markdown, no backticks, no code fences.
+- Use plain JSON format only.
+- The "statement" must include input and output format clearly (e.g., first line contains n, second line contains n space-separated integers).
+- Inputs must use space-separated format (NOT JSON arrays like [1,2,3]).
+- Do NOT write explanations, ONLY the structured problem.
 
-Rules:
-- Input must always be clear and compatible with C++, JS, Python (e.g., first line has n, second line has n elements).
-- Avoid formats like "[1,2,3]" — instead use space-separated integers, lengths, etc.
-- You must always include the input format in the "statement".
-- Avoid code fences like \`\`\`.
-
-Return JSON like this:
+🎯 Output JSON Format (no extra characters):
 
 {
-  "name": "Rotate Array",
-  "code": "rotate_array",
-  "difficulty": "Easy",
-  "statement": "You are given an array of N integers and an integer K. Rotate the array to the right by K steps.\n\nInput:\nFirst line contains two integers N and K.\nSecond line contains N space-separated integers.\n\nOutput:\nSingle line with N space-separated integers after rotation.",
+  "name": "Descriptive Title",
+  "code": "unique_code_snake_case",
+  "difficulty": "Easy|Medium|Hard",
+  "statement": "Full problem description including input/output format and constraints.",
   "sampleTestCases": [
     {
       "input": "5 2\\n1 2 3 4 5",
@@ -129,24 +129,100 @@ Return JSON like this:
     }
   ]
 }
-Only respond with plain JSON.
+
+💡 Example Input style:
+Use this:
+"input": "3\\n1 2 3"
+Not this:
+"input": "[1,2,3]"
+
+Respond ONLY with valid JSON — no markdown, no explanation.
 `;
 
     const result = await model.generateContent(prompt);
-    let text = result.response.text();
+    let raw = result.response.text();
 
-    // ✅ Extract JSON block using regex
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) {
-      return res
-        .status(500)
-        .json({ message: "Could not extract valid JSON from AI response" });
+    // Fix escaped characters in the raw Gemini response if needed
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return res.status(500).json({
+        message: "Could not extract valid JSON from Gemini response.",
+      });
     }
 
-    const json = JSON.parse(match[0]);
-    res.status(200).json(json);
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    // Optional validation
+    const valid =
+      parsed.name &&
+      parsed.code &&
+      parsed.difficulty &&
+      parsed.statement &&
+      Array.isArray(parsed.sampleTestCases) &&
+      parsed.sampleTestCases.length > 0;
+
+    if (!valid) {
+      return res
+        .status(400)
+        .json({ message: "Invalid problem structure from AI." });
+    }
+
+    res.status(200).json(parsed);
   } catch (err) {
     console.error("AI Problem Generator Error:", err.message);
     res.status(500).json({ message: "Failed to generate problem using AI" });
+  }
+};
+
+export const generateBoilerplate = async (req, res) => {
+  try {
+    const { statement, language } = req.body;
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+You are an expert coding mentor.
+
+Generate pseudocode or the step to solve the problem in ${language} based ONLY on the following problem:
+---
+${statement}
+---
+Rules:
+- Return ONLY pure pseudocode or the step to solve the problem using code-style comments (e.g. // line).
+- Do NOT include any actual code, markdown, explanations, or blank lines.
+- Each step must be in a single-line comment format.
+- The output should be directly copy-pasteable as commented pseudocode.
+`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    res.json({ boilerplate: text });
+  } catch (err) {
+    console.error("Boilerplate Error:", err.message);
+    res.status(500).json({ message: "Failed to generate boilerplate" });
+  }
+};
+
+export const simplifyProblem = async (req, res) => {
+  try {
+    const { statement } = req.body;
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+Simplify this coding problem for beginners. Keep it short, clear, and highlight the core logic and input-output format.
+
+---
+${statement}
+---
+
+Only return simplified plain text.`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    res.json({ simplified: text });
+  } catch (err) {
+    console.error("Simplify Error:", err.message);
+    res.status(500).json({ message: "Failed to simplify problem" });
   }
 };
