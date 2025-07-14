@@ -1,0 +1,33 @@
+# Node & Package folders
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Compiler-generated code/input/output
+inputs/
+outputs/
+codes/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# IDEs & OS files
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
