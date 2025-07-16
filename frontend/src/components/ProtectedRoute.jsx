@@ -22,7 +22,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     };
 
     checkAuth();
-  }, []);
+  }, [adminOnly]);
 
   if (auth.loading) return <div className="p-6">Checking auth...</div>;
 

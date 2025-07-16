@@ -21,7 +21,7 @@ const ContestProblem = () => {
         const res = await API.get(`/contests/${contestId}/problems/${problemCode}`);
         setProblem(res.data);
       } catch (err) {
-        toast.error("Problem not found or access denied");
+        toast.error(err.response?.data?.message || "Problem not found or access denied");
       }
     };
 
@@ -57,8 +57,9 @@ const ContestProblem = () => {
       }
 
       setRunResults(results);
-    } catch {
-      toast.error("Run failed");
+    } catch (err) {
+      console.error("Run failed:", err);
+      toast.error(err.response?.data?.message || "Run failed");
     }
   };
 
@@ -70,7 +71,8 @@ const ContestProblem = () => {
       }
 
       setSubmitting(true);
-      const res = await API.post("/submissions", {
+
+      const res = await API.post("/submissions/contest", {
         code: codeText,
         language,
         contestId,
@@ -83,131 +85,177 @@ const ContestProblem = () => {
       setTimeout(() => {
         verdictRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 300);
-    } catch {
-      toast.error("Submission failed");
+    } catch (err) {
+      console.error("Submission error:", err);
+      toast.error(err.response?.data?.message || "Submission failed");
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (!problem) return <div className="p-6 text-white">Loading...</div>;
+  if (!problem) return <div className="min-h-screen bg-gray-950 text-gray-100 p-6 font-mono flex items-center justify-center">Loading problem...</div>;
 
   return (
-    <div className="max-w-6xl mx-auto p-6 text-white">
-      <Link
-        to={`/contests/${contestId}`}
-        className="inline-block mb-4 text-sm text-blue-400 hover:underline"
-      >
-        ← Back to Contest
-      </Link>
+    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 font-mono">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <Link
+          to={`/contests/${contestId}`}
+          className="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 mb-4"
+        >
+          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Back to Contest
+        </Link>
 
-      <h2 className="text-2xl font-bold mb-2 text-blue-300">{problem.name}</h2>
-      <p className="text-sm text-gray-400 mb-4">
-        Difficulty: <span className="text-white">{problem.difficulty}</span>
-      </p>
-      <p className="whitespace-pre-line">{problem.statement}</p>
-
-      {problem.sampleTestCases.length > 0 && (
-        <div className="mt-6">
-          <h4 className="text-lg font-semibold mb-2">Sample Test Cases</h4>
-          {problem.sampleTestCases.map((t, i) => (
-            <div key={i} className="bg-white/10 p-4 rounded mb-4 border border-white/10">
-              <p className="mb-2">
-                <span className="text-blue-400">Input:</span>
-                <pre className="bg-black/30 p-2 mt-1 rounded">{t.input}</pre>
-              </p>
-              <p>
-                <span className="text-blue-400">Expected Output:</span>
-                <pre className="bg-black/30 p-2 mt-1 rounded">{t.expectedOutput}</pre>
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="mt-8 bg-white/5 border border-white/10 p-4 rounded shadow">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-semibold">Code Editor</h3>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-300">Language:</span>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="bg-white/10 text-sm px-3 py-1 rounded"
+        {/* Problem Statement Section */}
+        <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 shadow-md">
+          <h2 className="text-2xl font-bold mb-2 text-blue-400">{problem.name}</h2>
+          <p className="text-sm text-gray-400 mb-4">
+            Difficulty:{" "}
+            <span
+              className={`font-semibold ${
+                problem.difficulty === "Easy"
+                  ? "text-green-500"
+                  : problem.difficulty === "Medium"
+                  ? "text-yellow-500"
+                  : "text-red-500"
+              }`}
             >
-              <option value="cpp">C++</option>
-              <option value="python">Python</option>
-              <option value="javascript">JavaScript</option>
-            </select>
+              {problem.difficulty}
+            </span>
+          </p>
+          <div className="text-gray-300 leading-relaxed whitespace-pre-line text-sm">
+            {problem.statement}
+          </div>
+
+          {problem.sampleTestCases.length > 0 && (
+            <div className="mt-6 border-t border-gray-800 pt-6">
+              <h4 className="text-lg font-semibold mb-3 text-gray-200">Sample Test Cases</h4>
+              <div className="space-y-4">
+                {problem.sampleTestCases.map((t, i) => (
+                  <div key={i} className="bg-gray-800 p-4 rounded-md border border-gray-700">
+                    <p className="mb-2 text-sm">
+                      <span className="text-blue-400 font-semibold">Input:</span>
+                      <pre className="bg-gray-950 text-gray-100 p-2 mt-1 rounded text-xs overflow-x-auto border border-gray-700">
+                        {t.input}
+                      </pre>
+                    </p>
+                    <p className="text-sm">
+                      <span className="text-blue-400 font-semibold">Expected Output:</span>
+                      <pre className="bg-gray-950 text-gray-100 p-2 mt-1 rounded text-xs overflow-x-auto border border-gray-700">
+                        {t.expectedOutput}
+                      </pre>
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Code Editor Section */}
+        <div className="bg-gray-900 border border-gray-700 p-6 rounded-lg shadow-md">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold text-gray-200">Code Editor</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-400">Language:</span>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="bg-gray-800 text-gray-200 text-sm px-3 py-1.5 rounded-md border border-gray-700 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              >
+                <option value="cpp">C++</option>
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript</option>
+              </select>
+            </div>
+          </div>
+
+          <Editor
+            height="450px" 
+            language={language}
+            theme="vs-dark"
+            value={codeText}
+            onChange={(val) => setCodeText(val)}
+            options={{
+              fontSize: 14,
+              minimap: { enabled: false },
+              automaticLayout: true,
+              fontFamily: "Fira Code, monospace",
+              lineNumbersMinChars: 3,
+              scrollBeyondLastLine: false,
+              wordWrap: "on",
+            }}
+          />
+
+          <div className="mt-4 flex gap-3 justify-end"> 
+            <button
+              onClick={handleRun}
+              className="bg-yellow-600 hover:bg-yellow-700 text-gray-900 px-5 py-2 rounded-md font-semibold transition-colors duration-200 shadow-md"
+            >
+              ▶️ Run Code
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+            >
+              {submitting ? "Submitting..." : "🚀 Submit Code"}
+            </button>
           </div>
         </div>
-        <Editor
-          height="400px"
-          language={language}
-          theme="vs-dark"
-          value={codeText}
-          onChange={(val) => setCodeText(val)}
-          options={{
-            fontSize: 14,
-            minimap: { enabled: false },
-            automaticLayout: true,
-          }}
-        />
 
-        <div className="mt-4 flex gap-4">
-          <button
-            onClick={handleRun}
-            className="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded font-semibold"
-          >
-            ▶️ Run Code
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
-          >
-            {submitting ? "Submitting..." : "🚀 Submit Code"}
-          </button>
-        </div>
-
+        {/* Run Results Section */}
         {runResults.length > 0 && (
-          <div className="mt-6 space-y-4">
-            <h4 className="text-lg font-semibold">Run Results</h4>
-            {runResults.map((r, i) => (
-              <div
-                key={i}
-                className={`p-4 rounded border ${
-                  r.passed
-                    ? "border-green-400 bg-green-900/20"
-                    : "border-red-400 bg-red-900/20"
-                }`}
-              >
-                <p>
-                  <strong>Input:</strong> <code>{r.input}</code>
-                </p>
-                <p>
-                  <strong>Expected:</strong> <code>{r.expectedOutput}</code>
-                </p>
-                <p>
-                  <strong>Actual:</strong> <code>{r.actualOutput}</code>
-                </p>
-                <p>
-                  <strong>Status:</strong> {r.passed ? "✅ Passed" : "❌ Failed"}
-                </p>
-              </div>
-            ))}
+          <div className="bg-gray-900 border border-gray-700 p-6 rounded-lg shadow-md">
+            <h4 className="text-xl font-semibold mb-4 text-gray-200">Run Results</h4>
+            <div className="space-y-4">
+              {runResults.map((r, i) => (
+                <div
+                  key={i}
+                  className={`p-4 rounded-md border ${
+                    r.passed
+                      ? "border-green-600 bg-green-900/20"
+                      : "border-red-600 bg-red-900/20"
+                  } transition-colors duration-200`}
+                >
+                  <p className="text-sm mb-1">
+                    <strong className="text-gray-300">Input:</strong>{" "}
+                    <code className="bg-gray-950 text-gray-100 px-2 py-1 rounded text-xs">{r.input}</code>
+                  </p>
+                  <p className="text-sm mb-1">
+                    <strong className="text-gray-300">Expected Output:</strong>{" "}
+                    <code className="bg-gray-950 text-gray-100 px-2 py-1 rounded text-xs">{r.expectedOutput}</code>
+                  </p>
+                  <p className="text-sm mb-2">
+                    <strong className="text-gray-300">Actual Output:</strong>{" "}
+                    <code className="bg-gray-950 text-gray-100 px-2 py-1 rounded text-xs">{r.actualOutput}</code>
+                  </p>
+                  <p className="text-base font-semibold">
+                    <strong className="text-gray-300">Status:</strong>{" "}
+                    {r.passed ? (
+                      <span className="text-green-500">✅ Passed</span>
+                    ) : (
+                      <span className="text-red-500">❌ Failed</span>
+                    )}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
+        {/* Verdict Display */}
         {verdict && (
-          <div
-            ref={verdictRef}
-            className="mt-6 text-lg font-semibold text-center"
-          >
+          <div ref={verdictRef} className="mt-6 text-2xl font-bold text-center p-4 rounded-lg shadow-lg"
+            style={{
+                backgroundColor: verdict === "Accepted" ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
+                borderColor: verdict === "Accepted" ? '#22C55E' : '#EF4444',
+                borderWidth: '1px'
+            }}>
             {verdict === "Accepted" ? (
-              <span className="text-green-400">✅ {verdict}</span>
+              <span className="text-green-500">✅ {verdict}</span>
             ) : (
-              <span className="text-red-400">❌ {verdict}</span>
+              <span className="text-red-500">❌ {verdict}</span>
             )}
           </div>
         )}

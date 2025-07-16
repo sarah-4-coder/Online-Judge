@@ -111,6 +111,7 @@ const ProblemDetail = () => {
       setExplanation("");
 
       const results = [];
+      
 
       for (const test of problem.sampleTestCases || []) {
         const res = await API.post("/submissions/run", {
@@ -146,7 +147,7 @@ const ProblemDetail = () => {
       setVerdict(null);
       setRunResults([]);
 
-      const res = await API.post("/submissions", {
+      const res = await API.post("/submissions/regular", {
         code: codeText,
         language,
         problemCode: code,

@@ -8,12 +8,11 @@ import Layout from "./components/Layout";
 import ProblemDetail from "./pages/ProblemDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminPanel from "./pages/AdminPanel";
-import { Toaster } from "./components/ui/sonner"
+import { Toaster } from "./components/ui/sonner";
 import Contests from "./pages/Contests";
 import ContestDashboard from "./pages/ContestDashboard";
 import ContestProblem from "./pages/ContestProblem";
 import AdminCreateContest from "./pages/AdminCreateContest";
-
 
 function App() {
   return (
@@ -65,9 +64,11 @@ function App() {
         <Route
           path="/problems/:code"
           element={
-            <Layout>
-              <ProblemDetail />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <ProblemDetail />
+              </Layout>
+            </ProtectedRoute>
           }
         />
         <Route
@@ -101,9 +102,8 @@ function App() {
           }
         />
       </Routes>
-       <Toaster richColors/>
+      <Toaster richColors />
     </BrowserRouter>
-    
   );
 }
 

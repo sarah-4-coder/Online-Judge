@@ -1,6 +1,7 @@
 import Contest from "../models/contest.js";
 import ContestProblem from "../models/contestProblem.js";
 import JoinedContest from "../models/joinedContest.js";
+import Submission from "../models/Submission.js";
 
 export const getContestDetails = async (req, res) => {
   try {
@@ -12,25 +13,30 @@ export const getContestDetails = async (req, res) => {
 
     // Check if user has joined
     if (!contest.participants.includes(userId)) {
-      return res.status(403).json({ message: "You have not joined this contest." });
+      return res
+        .status(403)
+        .json({ message: "You have not joined this contest." });
     }
 
-    const problems = await ContestProblem.find({ contestId: id }).select("name code");
+    const problems = await ContestProblem.find({ contestId: id }).select(
+      "name code"
+    );
 
     res.status(200).json({
       ...contest.toObject(),
       problems,
     });
   } catch (err) {
-    res.status(500).json({ message: "Error fetching contest", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching contest", error: err.message });
   }
 };
-
 
 // Create Contest with Problems
 export const createContest = async (req, res) => {
   try {
-    const { name, description ,startTime, endTime, problems } = req.body;
+    const { name, description, startTime, endTime, problems } = req.body;
 
     if (!name || !startTime || !endTime || !Array.isArray(problems)) {
       return res.status(400).json({ message: "Invalid contest data" });
@@ -65,7 +71,6 @@ export const createContest = async (req, res) => {
   }
 };
 
-
 export const addProblemToContest = async (req, res) => {
   try {
     const { id } = req.params;
@@ -79,11 +84,11 @@ export const addProblemToContest = async (req, res) => {
 
     res.status(201).json({ message: "Problem added", problem });
   } catch (err) {
-    res.status(500).json({ message: "Failed to add problem", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to add problem", error: err.message });
   }
 };
-
-
 
 export const getAllContests = async (req, res) => {
   try {
@@ -93,7 +98,6 @@ export const getAllContests = async (req, res) => {
     res.status(500).json({ message: "Failed to load contests" });
   }
 };
-
 
 export const joinContest = async (req, res) => {
   try {
@@ -107,18 +111,50 @@ export const joinContest = async (req, res) => {
 
     // ✅ Add user to contest.participants array
     await Contest.findByIdAndUpdate(contestId, {
-      $addToSet: { participants: userId }
+      $addToSet: { participants: userId },
     });
 
     res.status(201).json({ message: "Successfully joined contest" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to join contest", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to join contest", error: err.message });
   }
 };
 
+export const getContestSubmissions = async (req, res) => {
+  try {
+    const { id: contestId } = req.params;
+    const userId = req.user.id;
 
+    const submissions = await Submission.find({
+      userId: userId,
+      contestId: contestId,
+    })
+      .populate("contestProblemId", "name code")
+      .sort({ createdAt: -1 });
 
+    const formattedSubmissions = submissions.map((s) => ({
+      _id: s._id,
+      verdict: s.verdict,
+      language: s.language,
+      createdAt: s.createdAt,
+      problemCode: s.contestProblemId ? s.contestProblemId.code : "N/A",
+      problemName: s.contestProblemId ? s.contestProblemId.name : "N/A",
+      code: s.code,
+    }));
 
+    res.status(200).json(formattedSubmissions);
+  } catch (err) {
+    console.error("Error loading contest submissions:", err);
+    res
+      .status(500)
+      .json({
+        message: "Failed to load contest submissions",
+        error: err.message,
+      });
+  }
+};
 
 export const getContestProblem = async (req, res) => {
   try {

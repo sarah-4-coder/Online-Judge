@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/user.js";
+import User from "../models/User.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -55,8 +55,8 @@ export const loginUser = async (req, res) => {
     res
       .cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // true in prod
-        sameSite: "strict",
+        secure: false,
+        sameSite:"lax",
         maxAge: 24 * 60 * 60 * 1000, // 1 day
       })
       .status(200)
