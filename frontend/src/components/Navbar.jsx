@@ -17,7 +17,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-20 w-full bg-white/10 backdrop-blur border-b border-white/20 shadow-md text-white">
+    <nav className="sticky top-0 z-20 w-full bg-white/5 backdrop-blur border-b border-white/20 shadow-md text-white">
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
         <Link
           to="/"

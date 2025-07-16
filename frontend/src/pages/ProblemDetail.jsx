@@ -4,6 +4,12 @@ import { useParams } from "react-router-dom";
 import API from "../services/api";
 import Editor from "@monaco-editor/react";
 import { toast } from "sonner";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../components/ui/accordion";
 
 const languageOptions = [
   { name: "C++", value: "cpp" },
@@ -24,14 +30,16 @@ const ProblemDetail = () => {
   const [viewCode, setViewCode] = useState("");
   const [viewLang, setViewLang] = useState("cpp");
   const [explanation, setExplanation] = useState("");
-  const [action, setAction] = useState(""); // "", "run", "submit", "explain"
+  const [action, setAction] = useState("");
   const [debug, setDebug] = useState("");
   const [hint, setHint] = useState("");
   const [hintLoading, setHintLoading] = useState(false);
   const [boilerplate, setBoilerplate] = useState("");
   const [simplified, setSimplified] = useState("");
-
+  const [customInput, setCustomInput] = useState("");
   const [simplifyModal, setSimplifyModal] = useState(false);
+
+  const [activeTab, setActiveTab] = useState("runResults");
 
   useEffect(() => {
     const fetchProblem = async () => {
@@ -109,9 +117,11 @@ const ProblemDetail = () => {
       setRunResults([]);
       setVerdict(null);
       setExplanation("");
+      setOutput(null);
+      setDebug("");
+      setActiveTab("runResults");
 
       const results = [];
-      
 
       for (const test of problem.sampleTestCases || []) {
         const res = await API.post("/submissions/run", {
@@ -139,6 +149,32 @@ const ProblemDetail = () => {
     }
   };
 
+  const handleCustomRun = async () => {
+    try {
+      setAction("customRun");
+      setOutput(null);
+      setVerdict(null);
+      setRunResults([]);
+      setExplanation("");
+      setDebug("");
+      setActiveTab("customOutput");
+
+      const res = await API.post("/submissions/run", {
+        code: codeText,
+        language,
+        input: customInput,
+      });
+
+      setOutput(res.data.output?.trim());
+      toast.success("Custom run successful!");
+    } catch (err) {
+      toast.error("Custom run failed");
+      setOutput(err.response?.data?.error || "Error during custom run.");
+    } finally {
+      setAction("");
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       setExplanation("");
@@ -146,6 +182,7 @@ const ProblemDetail = () => {
       setOutput(null);
       setVerdict(null);
       setRunResults([]);
+      setDebug("");
 
       const res = await API.post("/submissions/regular", {
         code: codeText,
@@ -168,7 +205,10 @@ const ProblemDetail = () => {
   const handleExplain = async () => {
     try {
       setVerdict(null);
+      setOutput(null);
       setAction("explain");
+      setDebug("");
+      setActiveTab("explanation");
       const res = await API.post("/ai/explain", { code: codeText });
       setExplanation(res.data.explanation);
     } catch {
@@ -185,6 +225,7 @@ const ProblemDetail = () => {
       setOutput(null);
       setAction("debug");
       setDebug("");
+      setActiveTab("debug");
       const res = await API.post("/ai/debug", { code: codeText });
       setDebug(res.data.debug);
     } catch {
@@ -222,12 +263,12 @@ const ProblemDetail = () => {
 
     return lines.map((line, idx) => {
       if (line.startsWith("```")) {
-        return null; // Skip triple backticks if any
+        return null;
       } else if (
-        line.startsWith("    ") || // indented code
-        line.startsWith("#include") || // C++ specific
-        line.includes("std::") || // std usage
-        /^[a-zA-Z0-9_]+ ?\(.*\)/.test(line) // function signature
+        line.startsWith("    ") ||
+        line.startsWith("#include") ||
+        line.includes("std::") ||
+        /^[a-zA-Z0-9_]+ ?\(.*\)/.test(line)
       ) {
         return (
           <pre
@@ -238,7 +279,6 @@ const ProblemDetail = () => {
           </pre>
         );
       } else {
-        // Format bold and inline code
         const formatted = line
           .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
           .replace(/`(.*?)`/g, "<code>$1</code>");
@@ -257,11 +297,10 @@ const ProblemDetail = () => {
   if (!problem) return <div className="p-6 text-white">Loading problem...</div>;
 
   return (
-    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 p-6 text-white animate-[--animate-fade-in]">
-      {/* 🧠 Main Section */}
-      <div className="md:col-span-3 space-y-6">
-        {/* 📘 Problem Statement */}
-        <div className="bg-white/5 border border-white/10 p-6 rounded-xl shadow">
+    <div className="p-6 text-white animate-[--animate-fade-in] flex flex-col gap-6 w-full">
+      <div className="flex flex-col lg:flex-row gap-6 w-full">
+        {" "}
+        <div className="bg-white/5 border border-white/10 p-6 rounded-xl shadow flex-grow">
           <h2 className="text-2xl font-bold mb-2 text-blue-300">
             {problem.name}
           </h2>
@@ -269,13 +308,16 @@ const ProblemDetail = () => {
             Difficulty: <span className="text-white">{problem.difficulty}</span>
           </p>
           <p className="whitespace-pre-line mb-5">{problem.statement}</p>
-          <button
-            onClick={handleSimplify}
-            disabled={action === "simplify"}
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-semibold"
-          >
-            {action === "simplify" ? "Simplifying..." : "Simplify Problem"}
-          </button>
+          <div className="flex flex-wrap gap-3 mb-6">
+            {" "}
+            <button
+              onClick={handleSimplify}
+              disabled={action === "simplify"}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-semibold"
+            >
+              {action === "simplify" ? "Simplifying..." : "Simplify Problem"}
+            </button>
+          </div>
 
           {problem.sampleTestCases.length > 0 && (
             <div className="mt-6">
@@ -305,36 +347,75 @@ const ProblemDetail = () => {
               ))}
             </div>
           )}
-        </div>
-        <button
-          onClick={handleHint}
-          disabled={hintLoading}
-          className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-md transition font-medium mt-4"
-        >
-          {hintLoading ? "Getting Hint..." : "💡 Get Hint"}
-        </button>
-
-        {hint && (
-          <div className="mt-4 p-4 bg-blue-900/20 border border-blue-500 text-white rounded">
-            <strong className="text-blue-300">Hint:</strong>
-            <p className="mt-2 text-sm whitespace-pre-wrap">{hint}</p>
+          <div className="flex flex-wrap gap-3 mb-6">
+            <button
+              onClick={handleHint}
+              disabled={hintLoading}
+              className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-md transition font-medium"
+            >
+              {hintLoading ? "Getting Hint..." : "💡 Get Hint"}
+            </button>
+            <button
+              onClick={handleBoilerplate}
+              disabled={action === "boilerplate"}
+              className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded font-semibold"
+            >
+              {action === "boilerplate"
+                ? "Generating..."
+                : "Get Boilerplate Code"}
+            </button>
           </div>
-        )}
-
-        <div className="mt-4 flex flex-wrap gap-3">
-          <button
-            onClick={handleBoilerplate}
-            disabled={action === "boilerplate"}
-            className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded font-semibold"
-          >
-            {action === "boilerplate"
-              ? "Generating..."
-              : "Get Boilerplate Code"}
-          </button>
+          {hint && (
+            <div className="mt-4 p-4 bg-blue-900/20 border border-blue-500 text-white rounded">
+              <strong className="text-blue-300">Hint:</strong>
+              <p className="mt-2 text-sm whitespace-pre-wrap">{hint}</p>
+            </div>
+          )}
         </div>
+        <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow flex-shrink-0 lg:w-1/3 h-fit">
+          {" "}
+          <h3 className="text-lg font-semibold mb-4">📜 Submission History</h3>
+          {submissions.length === 0 ? (
+            <p className="text-gray-400 text-sm">No submissions yet.</p>
+          ) : (
+            <ul className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+              {submissions.map((s) => (
+                <li
+                  key={s._id}
+                  onClick={() => {
+                    setViewCode(s.code);
+                    setViewLang(s.language);
+                    setShowCodeModal(true);
+                  }}
+                  className="p-2 border border-white/10 rounded hover:bg-white/10 cursor-pointer text-sm"
+                >
+                  <div className="flex justify-between">
+                    <span
+                      className={`font-semibold ${
+                        s.verdict === "Accepted"
+                          ? "text-green-400"
+                          : s.verdict === "Wrong Answer"
+                          ? "text-red-400"
+                          : "text-yellow-300"
+                      }`}
+                    >
+                      {s.verdict}
+                    </span>
+                    <span className="text-gray-400 text-xs">
+                      {s.createdAt
+                        ? new Date(s.createdAt).toLocaleString()
+                        : "Unknown"}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
 
-        {/* 💻 Editor */}
-        <div className="bg-white/5 border border-white/10 p-6 rounded-xl shadow">
+      <div className="flex flex-col lg:flex-row gap-6 w-full">
+        <div className="bg-white/5 border border-white/10 p-6 rounded-xl shadow flex-grow-[2] lg:w-4/5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold">Code Editor</h3>
             <select
@@ -355,7 +436,7 @@ const ProblemDetail = () => {
           </div>
 
           <Editor
-            height="400px"
+            height="450px"
             language={language}
             theme="vs-dark"
             value={codeText}
@@ -366,29 +447,15 @@ const ProblemDetail = () => {
               automaticLayout: true,
             }}
           />
-          {boilerplate && (
-            <div className="mt-6 bg-white/10 p-4 rounded border border-white/10">
-              <h4 className="text-lg font-semibold mb-2 text-indigo-400">
-                🛠 Starter Code
-              </h4>
-              <Editor
-                height="300px"
-                language={language}
-                theme="vs-dark"
-                value={boilerplate}
-                options={{ readOnly: true, fontSize: 14 }}
-              />
-            </div>
-          )}
 
-          {/* Buttons */}
-          <div className="mt-4 flex gap-4 flex-wrap">
+          {/* Action Buttons */}
+          <div className="mt-4 flex flex-wrap gap-3 items-center">
             <button
               onClick={handleRun}
               disabled={action === "run"}
               className="bg-yellow-500 hover:bg-yellow-600 text-black px-5 py-2 rounded-md font-semibold transition"
             >
-              {action === "run" ? "Running..." : "Run Code"}
+              {action === "run" ? "Running Sample..." : "Run Code"}
             </button>
 
             <button
@@ -415,59 +482,36 @@ const ProblemDetail = () => {
             </button>
           </div>
 
-          {/* ✅ Run Results */}
-          {runResults.length > 0 && (
-            <div className="mt-6 space-y-4">
-              <h4 className="text-lg font-semibold">Run Results</h4>
-              {runResults.map((r, i) => (
-                <div
-                  key={i}
-                  className={`p-4 rounded border ${
-                    r.passed
-                      ? "border-green-400 bg-green-900/20"
-                      : "border-red-400 bg-red-900/20"
-                  }`}
-                >
-                  <p>
-                    <strong>Input:</strong> <code>{r.input}</code>
-                  </p>
-                  <p>
-                    <strong>Expected:</strong> <code>{r.expectedOutput}</code>
-                  </p>
-                  <p>
-                    <strong>Actual:</strong> <code>{r.actualOutput}</code>
-                  </p>
-                  <p>
-                    <strong>Status:</strong>{" "}
-                    {r.passed ? "✅ Passed" : "❌ Failed"}
-                  </p>
+          {/* Custom Input and Run Button */}
+          <Accordion type="single" collapsible>
+            <AccordionItem value="item-1">
+              <AccordionTrigger>Custom Input</AccordionTrigger>
+              <AccordionContent>
+                <div className="mt-6 p-4 bg-white/10 rounded-lg border border-white/10">
+                  <h4 className="text-lg font-semibold mb-3 text-cyan-300">
+                    Run with Custom Input
+                  </h4>
+                  <textarea
+                    className="w-full bg-black/30 text-white p-3 rounded-md text-sm resize-y min-h-[100px] focus:outline-none focus:border-blue-500"
+                    placeholder="Enter your custom input here..."
+                    value={customInput}
+                    onChange={(e) => setCustomInput(e.target.value)}
+                  ></textarea>
+                  <button
+                    onClick={handleCustomRun}
+                    disabled={action === "customRun"}
+                    className="mt-3 bg-green-500 hover:bg-green-600 text-black px-5 py-2 rounded-md font-semibold transition"
+                  >
+                    {action === "customRun"
+                      ? "Running Custom..."
+                      : "Run with Custom Input"}
+                  </button>
                 </div>
-              ))}
-            </div>
-          )}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
-          {/* 💬 AI Explanation */}
-          {explanation && (
-            <div className="mt-6 p-4 bg-white/10 rounded border border-white/10">
-              <h4 className="text-lg font-semibold mb-3 text-purple-400">
-                Code Explanation
-              </h4>
-              <div className="space-y-3">{renderExplanation()}</div>
-            </div>
-          )}
-
-          {debug && (
-            <div className="mt-6 p-4 bg-white/10 rounded border border-white/10">
-              <h4 className="text-lg font-semibold mb-2 text-red-400">
-                🛠️ Debug Suggestions
-              </h4>
-              <div className="space-y-2 whitespace-pre-line text-sm text-white">
-                {renderFormattedText(debug)}
-              </div>
-            </div>
-          )}
-
-          {/* 🧾 Final Verdict */}
+          {/* Final Verdict (for submission - kept here as direct feedback to editor) */}
           {verdict && (
             <div className="mt-4 p-4 rounded bg-white/10 border border-white/10 text-sm font-semibold text-center">
               {verdict === "Accepted" ? (
@@ -480,7 +524,145 @@ const ProblemDetail = () => {
             </div>
           )}
         </div>
+
+        {/* Right Sub-Panel: Output/Results Area */}
+        <div className="bg-black p-6   flex-grow lg:w-2/5">
+          {" "}
+          {/* flex-grow to take remaining space, lg:w-2/5 for explicit width */}
+          <h3 className="text-xl font-semibold mb-4">Results</h3>
+          <div className="flex border-b border-white/20">
+            <button
+              className={`px-4 py-2 text-sm font-medium ${
+                activeTab === "runResults"
+                  ? "border-2 border-blue-500 text-blue-300 rounded-t-lg"
+                  : "text-gray-400 hover:text-white"
+              }`}
+              onClick={() => setActiveTab("runResults")}
+            >
+              Test Results
+            </button>
+            <button
+              className={`ml-4 px-4 py-2 text-sm font-medium ${
+                activeTab === "customOutput"
+                  ? "border-2 border-blue-500 text-blue-300 rounded-t-lg"
+                  : "text-gray-400 hover:text-white"
+              }`}
+              onClick={() => setActiveTab("customOutput")}
+            >
+              Custom Output
+            </button>
+            <button
+              className={`ml-4 px-4 py-2 text-sm font-medium ${
+                activeTab === "explanation"
+                  ? "border-2 border-blue-500 text-blue-300 rounded-t-lg"
+                  : "text-gray-400 hover:text-white"
+              }`}
+              onClick={() => setActiveTab("explanation")}
+            >
+              Explanation
+            </button>
+            <button
+              className={`ml-4 px-4 py-2 text-sm font-medium ${
+                activeTab === "debug"
+                  ? "border-2 border-blue-500 text-blue-300 rounded-t-lg"
+                  : "text-gray-400 hover:text-white"
+              }`}
+              onClick={() => setActiveTab("debug")}
+            >
+              Debug
+            </button>
+          </div>
+          <div className="mt-4 p-4 bg-white/10 rounded-b-xl border border-white/10 min-h-[400px] max-h-[650px] overflow-y-auto">
+            {" "}
+            {/* Adjusted min/max height for better fit */}
+            {activeTab === "runResults" && (
+              <>
+                {runResults.length > 0 ? (
+                  <div className="space-y-4">
+                    {runResults.map((r, i) => (
+                      <div
+                        key={i}
+                        className={`p-3 rounded border ${
+                          r.passed
+                            ? "border-green-400 bg-green-900/20"
+                            : "border-red-400 bg-red-900/20"
+                        }`}
+                      >
+                        <p>
+                          <strong>Input:</strong>{" "}
+                          <code className="bg-black/30 px-1 rounded">
+                            {r.input}
+                          </code>
+                        </p>
+                        <p>
+                          <strong>Expected:</strong>{" "}
+                          <code className="bg-black/30 px-1 rounded">
+                            {r.expectedOutput}
+                          </code>
+                        </p>
+                        <p>
+                          <strong>Actual:</strong>{" "}
+                          <code className="bg-black/30 px-1 rounded">
+                            {r.actualOutput}
+                          </code>
+                        </p>
+                        <p>
+                          <strong>Status:</strong>{" "}
+                          {r.passed ? (
+                            <span className="text-green-400">✅ Passed</span>
+                          ) : (
+                            <span className="text-red-400">❌ Failed</span>
+                          )}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-400">Run code to see test results.</p>
+                )}
+              </>
+            )}
+            {activeTab === "customOutput" && (
+              <>
+                {output !== null ? (
+                  <pre className="bg-black/30 text-white p-3 rounded whitespace-pre-wrap text-sm overflow-x-auto">
+                    {output}
+                  </pre>
+                ) : (
+                  <p className="text-gray-400">
+                    Run with custom input to see output.
+                  </p>
+                )}
+              </>
+            )}
+            {activeTab === "explanation" && (
+              <>
+                {explanation ? (
+                  <div className="space-y-3">{renderExplanation()}</div>
+                ) : (
+                  <p className="text-gray-400">
+                    Explain your code to see explanation.
+                  </p>
+                )}
+              </>
+            )}
+            {activeTab === "debug" && (
+              <>
+                {debug ? (
+                  <div className="space-y-2 whitespace-pre-line text-sm text-white">
+                    {renderFormattedText(debug)}
+                  </div>
+                ) : (
+                  <p className="text-gray-400">
+                    Debug your code to get suggestions.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       </div>
+
       {simplifyModal && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-6">
           <div className="bg-[#121212] border border-white/10 rounded-xl w-full max-w-2xl shadow-lg p-6 relative">
@@ -500,48 +682,7 @@ const ProblemDetail = () => {
         </div>
       )}
 
-      {/* 📜 Submission History */}
-      <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow h-fit">
-        <h3 className="text-lg font-semibold mb-4">📜 Submission History</h3>
-        {submissions.length === 0 ? (
-          <p className="text-gray-400 text-sm">No submissions yet.</p>
-        ) : (
-          <ul className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-            {submissions.map((s) => (
-              <li
-                key={s._id}
-                onClick={() => {
-                  setViewCode(s.code);
-                  setViewLang(s.language);
-                  setShowCodeModal(true);
-                }}
-                className="p-2 border border-white/10 rounded hover:bg-white/10 cursor-pointer text-sm"
-              >
-                <div className="flex justify-between">
-                  <span
-                    className={`font-semibold ${
-                      s.verdict === "Accepted"
-                        ? "text-green-400"
-                        : s.verdict === "Wrong Answer"
-                        ? "text-red-400"
-                        : "text-yellow-300"
-                    }`}
-                  >
-                    {s.verdict}
-                  </span>
-                  <span className="text-gray-400 text-xs">
-                    {s.createdAt
-                      ? new Date(s.createdAt).toLocaleString()
-                      : "Unknown"}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* 👁️ View Code Modal */}
+      {/* View Code Modal (remains unchanged) */}
       {showCodeModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-[#1e1e1e] w-full max-w-3xl p-4 rounded-lg border border-white/10 relative">

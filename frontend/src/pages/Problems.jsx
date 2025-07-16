@@ -51,7 +51,7 @@ const Problems = () => {
                 <tr
                   key={p._id}
                   onClick={() => navigate(`/problems/${p.code}`)}
-                  className="border-t border-white/10 hover:bg-white/10 transition cursor-pointer"
+                  className="border-t bg-black hover:bg-white/10 transition cursor-pointer"
                 >
                   <td className="p-4 font-semibold text-blue-400">{p.name}</td>
                   <td className="p-4 text-gray-400">{p.code}</td>
@@ -86,7 +86,7 @@ const Problems = () => {
             </thead>
             <tbody>
               {leaders.map((user, index) => (
-                <tr key={user.userId} className="border-t border-white/10 hover:bg-white/10 transition">
+                <tr key={user.userId} className="border-t bg-black hover:bg-white/10 transition">
                   <td className="p-3 font-bold">{index + 1}</td>
                   <td className="p-3 truncate max-w-[140px] text-blue-300">{user.fullName}</td>
                   <td className="p-3 font-semibold text-green-400">{user.totalAccepted}</td>

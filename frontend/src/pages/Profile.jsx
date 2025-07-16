@@ -47,7 +47,7 @@ const Profile = () => {
       </h1>
 
       {isAdmin && (
-        <div className="mb-6 text-right">
+        <div className="flex flex-wrap gap-3 mb-6">
           <Link
             to="/admin"
             className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition"

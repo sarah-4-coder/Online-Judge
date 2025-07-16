@@ -138,7 +138,7 @@ const Contests = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-6">
+    <div className="min-h-screen bg-black from-gray-900 to-black p-6">
       <div className="max-w-6xl mx-auto space-y-8">
         <h2 className="text-4xl font-extrabold text-blue-400 text-center mb-10 tracking-wide">
           🏁 Competitive Contests
@@ -147,9 +147,9 @@ const Contests = () => {
         {contests.length === 0 ? (
           <p className="text-gray-400 text-center text-lg mt-8">No contests available yet. Check back later!</p>
         ) : (
-          <div className="bg-gray-800 rounded-lg shadow-xl overflow-hidden border border-gray-700">
+          <div className="bg-black rounded-lg shadow-xl overflow-hidden border border-gray-700">
             <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-gray-700">
+              <thead className="bg-white/10">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Contest Name
@@ -181,7 +181,7 @@ const Contests = () => {
                   const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
 
                   return (
-                    <tr key={c._id} className="hover:bg-gray-700 transition-colors duration-200">
+                    <tr key={c._id} className="hover:bg-white/10 transition-colors duration-200">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-blue-300">{c.name}</div>
                         <div className="text-xs text-gray-400 line-clamp-1">{c.description}</div>

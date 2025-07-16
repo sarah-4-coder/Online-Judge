@@ -91,9 +91,9 @@ const ContestDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-4 font-mono">
+    <div className="min-h-screen bg-black text-gray-100 p-4 font-mono">
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-md">
+        <div className="bg-black border border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-md">
           <div>
             <h2 className="text-2xl font-bold text-blue-400 mb-1">{contest?.name}</h2>
             <p className="text-gray-400 text-sm">{contest?.description}</p>
@@ -138,7 +138,7 @@ const ContestDashboard = () => {
         </div>
 
         {activeTab === "problems" && (
-          <div className="bg-gray-900 p-4 rounded-lg border border-gray-700 shadow-md">
+          <div className="bg-black p-4 rounded-lg border border-gray-700 shadow-md">
             <h3 className="text-xl font-bold text-blue-400 mb-4">Contest Problems</h3>
             {contest?.problems.length === 0 ? (
                 <p className="text-gray-500 text-sm">No problems added to this contest yet.</p>
@@ -149,7 +149,7 @@ const ContestDashboard = () => {
                     return (
                     <li
                         key={p._id}
-                        className="bg-gray-800 p-3 rounded-md border border-gray-700 hover:bg-gray-700 transition-colors duration-200 flex justify-between items-center"
+                        className="bg-black p-3 rounded-md border border-gray-700 hover:bg-gray-700 transition-colors duration-200 flex justify-between items-center"
                     >
                         <Link
                         to={`/contests/${id}/problems/${p.code}`}
@@ -173,7 +173,7 @@ const ContestDashboard = () => {
         )}
 
         {activeTab === "submissions" && (
-          <div className="bg-gray-900 p-4 rounded-lg border border-gray-700 shadow-md">
+          <div className="bg-black p-4 rounded-lg border border-gray-700 shadow-md">
             <h3 className="text-xl font-bold text-blue-400 mb-4">My Submissions</h3>
             {submissions.length === 0 ? (
               <p className="text-gray-500 text-sm">You haven't made any submissions yet.</p>
@@ -244,7 +244,7 @@ const ContestDashboard = () => {
         )}
 
         {activeTab === "leaderboard" && (
-          <div className="bg-gray-900 p-4 rounded-lg border border-gray-700 shadow-md">
+          <div className="bg-black p-4 rounded-lg border border-gray-700 shadow-md">
             <h3 className="text-xl font-bold text-blue-400 mb-4">Contest Leaderboard</h3>
             {leaderboardLoading ? (
               <p className="text-gray-500 text-sm">Loading leaderboard...</p>
@@ -297,7 +297,7 @@ const ContestDashboard = () => {
 
         {showCodeModal && (
           <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-2 backdrop-blur-sm">
-            <div className="bg-gray-900 w-full max-w-4xl p-4 rounded-lg shadow-2xl border border-gray-700 relative flex flex-col max-h-[90vh] h-full"> {/* Added h-full to explicitly give it height relative to parent */}
+            <div className="bg-black w-full max-w-4xl p-4 rounded-lg shadow-2xl border border-gray-700 relative flex flex-col max-h-[90vh] h-full"> {/* Added h-full to explicitly give it height relative to parent */}
               <div className="flex justify-between items-center mb-3">
                 <h4 className="text-xl font-bold text-blue-400">Submitted Code</h4>
                 <button
