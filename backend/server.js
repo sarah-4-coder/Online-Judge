@@ -16,7 +16,7 @@ import contestRoutes from './routes/contestRoutes.js';
 dotenv.config();
 const app = express();
 app.use(cors({
-  origin: 'https://www.codeverdict.online',
+  origin: ['https://codeverdict.online', 'https://www.codeverdict.online'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));

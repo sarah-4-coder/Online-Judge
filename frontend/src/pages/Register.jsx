@@ -32,8 +32,8 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-900 to-black flex items-center justify-center text-white">
-      <div className="bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-xl shadow-lg w-full max-w-lg animate-[--animate-fade-in]">
+    <div className="min-h-screen bg-black from-zinc-900 to-black flex items-center justify-center text-white font-mono">
+      <div className="bg-black backdrop-blur-md  p-8 rounded-xl shadow-lg w-full max-w-lg animate-[--animate-fade-in]">
         <h2 className="text-3xl font-bold text-center mb-6">Create Your Account</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -42,7 +42,7 @@ const Register = () => {
             placeholder="Full Name"
             value={form.fullName}
             onChange={handleChange}
-            className="w-full px-4 py-3 bg-white/10 text-white placeholder-gray-400 border border-white/20 rounded-md focus:outline-none focus:border-blue-500 transition"
+            className="w-full px-4 py-3 rounded-md bg-gray-800 placeholder-gray-500 text-gray-200 focus:outline-none border border-gray-700 focus:border-blue-500 transition-colors duration-200"
             required
           />
           <input
@@ -51,7 +51,7 @@ const Register = () => {
             placeholder="Email"
             value={form.email}
             onChange={handleChange}
-            className="w-full px-4 py-3 bg-white/10 text-white placeholder-gray-400 border border-white/20 rounded-md focus:outline-none focus:border-blue-500 transition"
+            className="w-full px-4 py-3 rounded-md bg-gray-800 placeholder-gray-500 text-gray-200 focus:outline-none border border-gray-700 focus:border-blue-500 transition-colors duration-200"
             required
           />
           <input
@@ -60,7 +60,7 @@ const Register = () => {
             placeholder="Password"
             value={form.password}
             onChange={handleChange}
-            className="w-full px-4 py-3 bg-white/10 text-white placeholder-gray-400 border border-white/20 rounded-md focus:outline-none focus:border-blue-500 transition"
+            className="w-full px-4 py-3 rounded-md bg-gray-800 placeholder-gray-500 text-gray-200 focus:outline-none border border-gray-700 focus:border-blue-500 transition-colors duration-200"
             required
           />
           <input
@@ -68,7 +68,7 @@ const Register = () => {
             name="dob"
             value={form.dob}
             onChange={handleChange}
-            className="w-full px-4 py-3 bg-white/10 text-white placeholder-gray-400 border border-white/20 rounded-md focus:outline-none focus:border-blue-500 transition"
+            className="w-full px-4 py-3 rounded-md bg-gray-800 placeholder-gray-500 text-gray-200 focus:outline-none border border-gray-700 focus:border-blue-500 transition-colors duration-200"
             required
           />
           <button
