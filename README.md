@@ -6,7 +6,7 @@
 
 ## 🌐 Live URL
 
-* **Frontend:** [https://codeverdict.online](https://codeverdict.online)
+* **Frontend:** [https://codeverdict.online](https://www.codeverdict.online)
 * **Backend:** Hosted on AWS EC2 behind Nginx with Docker
 
 ---
