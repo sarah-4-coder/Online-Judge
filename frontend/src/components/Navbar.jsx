@@ -23,7 +23,7 @@ const Navbar = () => {
           to="/"
           className="text-2xl font-bold text-blue-400 hover:text-blue-300 transition"
         >
-          Online Judge
+          Code Verdict
         </Link>
 
         <div className="flex items-center gap-6 text-sm font-medium">
