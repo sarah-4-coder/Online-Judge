@@ -27,6 +27,9 @@ const Navbar = () => {
         </Link>
 
         <div className="flex items-center gap-6 text-sm font-medium">
+          <Link to="/compiler" className="hover:text-yellow-400 transition">
+             online Compiler
+          </Link>
           <Link to="/contests" className="hover:text-yellow-400 transition">
             Contests
           </Link>

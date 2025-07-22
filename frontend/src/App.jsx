@@ -13,6 +13,7 @@ import Contests from "./pages/Contests";
 import ContestDashboard from "./pages/ContestDashboard";
 import ContestProblem from "./pages/ContestProblem";
 import AdminCreateContest from "./pages/AdminCreateContest";
+import CompilerPage from "./pages/CompilerPage";
 
 function App() {
   return (
@@ -21,6 +22,16 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route
+          path="/compiler" // New route for the compiler page
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CompilerPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/contests"
           element={
