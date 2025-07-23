@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; // Import useEffect
+import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import { toast } from "sonner";
 import API from "../services/api";
@@ -15,8 +15,8 @@ const CompilerPage = () => {
   const [customInput, setCustomInput] = useState("");
   const [runResult, setRunResult] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
-  const [runHistory, setRunHistory] = useState([]); // New state for run history
-  const [showHistoryModal, setShowHistoryModal] = useState(false); // New state for history modal
+  const [runHistory, setRunHistory] = useState([]); // State for run history
+  const [showHistoryModal, setShowHistoryModal] = useState(false); // State for history modal
   const [viewHistoryCode, setViewHistoryCode] = useState(""); // State for code in history modal
   const [viewHistoryLang, setViewHistoryLang] = useState(""); // State for language in history modal
 
@@ -44,15 +44,24 @@ const CompilerPage = () => {
       toast.error("Code cannot be empty.");
       return;
     }
+
+    let submissionName = prompt("Enter a name for this code run (optional):");
+    if (!submissionName || submissionName.trim() === "") {
+      submissionName = `${language}-${new Date().toLocaleString()}`;
+    }
+
     setIsRunning(true);
     setRunResult(null);
+
     try {
       const res = await API.post("/submissions/run", {
         code: codeText,
         language,
         input: customInput,
       });
+
       const newRun = {
+        name: submissionName, 
         code: codeText,
         language,
         input: customInput,
@@ -60,13 +69,29 @@ const CompilerPage = () => {
         error: res.data.error || null,
         timestamp: new Date().toLocaleString(),
       };
+
       setRunResult({ output: res.data.output, error: res.data.error });
-      setRunHistory((prevHistory) => [newRun, ...prevHistory].slice(0, 10)); 
+
+      setRunHistory((prevHistory) => {
+        const existingIndex = prevHistory.findIndex(
+          (entry) => entry.code === codeText && entry.language === language
+        );
+
+        if (existingIndex !== -1) {
+          const updatedHistory = [...prevHistory];
+          updatedHistory[existingIndex] = { ...newRun }; 
+          return updatedHistory;
+        } else {
+          return [newRun, ...prevHistory];
+        }
+      });
+
       toast.success("Code executed successfully!");
     } catch (err) {
       console.error("Code execution failed:", err);
       const errorMessage = err.response?.data?.message || "Code execution failed.";
       const newRun = {
+        name: submissionName, 
         code: codeText,
         language,
         input: customInput,
@@ -74,8 +99,23 @@ const CompilerPage = () => {
         error: errorMessage,
         timestamp: new Date().toLocaleString(),
       };
+
       setRunResult({ error: errorMessage });
-      setRunHistory((prevHistory) => [newRun, ...prevHistory].slice(0, 10)); 
+
+      setRunHistory((prevHistory) => {
+        const existingIndex = prevHistory.findIndex(
+          (entry) => entry.code === codeText && entry.language === language
+        );
+
+        if (existingIndex !== -1) {
+          const updatedHistory = [...prevHistory];
+          updatedHistory[existingIndex] = { ...newRun };
+          return updatedHistory;
+        } else {
+          return [newRun, ...prevHistory];
+        }
+      });
+
       toast.error(errorMessage);
     } finally {
       setIsRunning(false);
@@ -85,7 +125,7 @@ const CompilerPage = () => {
   const handleViewHistoryEntry = (entry) => {
     setViewHistoryCode(entry.code);
     setViewHistoryLang(entry.language);
-    setShowHistoryModal(true);
+    setShowHistoryModal(true); // Open the modal to show the code
   };
 
   return (
@@ -205,28 +245,22 @@ const CompilerPage = () => {
             ) : (
               <div className="overflow-y-auto pr-2 flex-grow">
                 {runHistory.map((entry, index) => (
-                  <div key={index} className="bg-gray-900 p-4 rounded-md mb-4 border border-gray-800">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-gray-400">
-                        {entry.timestamp} | {entry.language.toUpperCase()}
-                      </span>
-                      <button
-                        onClick={() => handleViewHistoryEntry(entry)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-semibold transition-colors duration-200"
-                      >
-                        View Code
-                      </button>
+                  <div
+                    key={index}
+                    className="bg-gray-900 p-4 rounded-md mb-4 border border-gray-800 flex justify-between items-center cursor-pointer hover:bg-gray-800 transition-colors"
+                    onClick={() => handleViewHistoryEntry(entry)} 
+                  >
+                    <div>
+                      <h5 className="text-lg font-semibold text-blue-300">{entry.name}</h5>
+                      <span className="text-sm text-gray-400">{entry.timestamp}</span>
                     </div>
-                    <p className="text-sm font-semibold mb-2">
-                      Input:{" "}
-                      <pre className="bg-gray-800 text-gray-300 p-2 rounded text-xs overflow-x-auto mt-1">{entry.input || "(No input)"}</pre>
-                    </p>
-                    <p className="text-sm font-semibold">
-                      Output:{" "}
-                      <pre className={`p-2 rounded text-xs overflow-x-auto mt-1 ${entry.error ? 'bg-red-900/20 text-red-400' : 'bg-gray-800 text-gray-300'}`}>
-                        {entry.output || entry.error || "(No output)"}
-                      </pre>
-                    </p>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        entry.error ? 'bg-red-600 text-white' : 'bg-green-600 text-white'
+                      }`}
+                    >
+                      {entry.error ? 'Error' : 'Success'}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -235,7 +269,6 @@ const CompilerPage = () => {
         </div>
       )}
 
-      {/* View Code from History Modal (reusing problem detail's modal logic) */}
       {showHistoryModal && viewHistoryCode && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-[#1e1e1e] w-full max-w-3xl p-4 rounded-lg border border-white/10 relative">
@@ -243,7 +276,6 @@ const CompilerPage = () => {
               onClick={() => {
                 setViewHistoryCode("");
                 setViewHistoryLang("");
-                // No need to hide the history modal itself, just this nested one
               }}
               className="absolute top-2 right-3 text-white text-xl"
             >
@@ -259,6 +291,12 @@ const CompilerPage = () => {
               value={viewHistoryCode}
               options={{ readOnly: true, fontSize: 14 }}
             />
+             <div className="mt-4 text-sm">
+                <p className="text-gray-300 mb-2"><strong>Input:</strong></p>
+                <pre className="bg-gray-800 p-2 rounded text-gray-200 overflow-auto whitespace-pre-wrap">{runHistory.find(r => r.code === viewHistoryCode && r.language === viewHistoryLang)?.input || "(No input)"}</pre>
+                <p className="text-gray-300 mt-4 mb-2"><strong>Output:</strong></p>
+                <pre className="bg-gray-800 p-2 rounded text-gray-200 overflow-auto whitespace-pre-wrap">{runHistory.find(r => r.code === viewHistoryCode && r.language === viewHistoryLang)?.output || runHistory.find(r => r.code === viewHistoryCode && r.language === viewHistoryLang)?.error || "(No output)"}</pre>
+            </div>
           </div>
         </div>
       )}
