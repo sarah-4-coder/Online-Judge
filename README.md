@@ -6,6 +6,7 @@
 
 ## 🌐 Live URL
 
+* **Live Demo Video:** (https://www.loom.com/share/9414053dd4914aa7b3e14911a0bca1ec?sid=06af45bc-9e17-4a71-9829-c96809059c91)
 * **Frontend:** [https://codeverdict.online](https://www.codeverdict.online)
 * **Backend:** Hosted on AWS EC2 behind Nginx with Docker
 
@@ -159,4 +160,5 @@ MIT License
 > Created with 💻 and ☕ by [Sparsh Rai](https://github.com/sparsh-rai)
 
 Feel free to ⭐️ the repo if you find it useful!
+
 
